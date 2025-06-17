@@ -11,23 +11,26 @@ public class TileInteractionManager : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            Debug.Log("Mouse click detected");
-
             Vector3 worldClick = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Vector3Int cell = tilemap.WorldToCell(worldClick);
             Vector3 center = tilemap.GetCellCenterWorld(cell);
 
-            Debug.Log("Grid cell: " + cell + " | World pos: " + center);
-
             Collider2D hit = Physics2D.OverlapPoint(worldClick);
-            if (hit != null)
+
+            if (hit != null && hit.GetComponent<DiggableTileVisual>() != null)
             {
-                Debug.Log("Collider hit: " + hit.name);
+                // ✔️ Already a dug tile → dig deeper
+                hit.GetComponent<DiggableTileVisual>().Dig();
             }
             else
             {
-                Debug.Log("No collider hit, instantiating dug tile.");
+                // ✔️ First time digging → instantiate and dig once
                 GameObject dug = Instantiate(dugTilePrefab, center, Quaternion.identity);
+                DiggableTileVisual digScript = dug.GetComponent<DiggableTileVisual>();
+                if (digScript != null)
+                {
+                    digScript.Dig();
+                }
             }
         }
     }
