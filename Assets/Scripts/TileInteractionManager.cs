@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 
 public class TileInteractionManager : MonoBehaviour
@@ -7,31 +8,40 @@ public class TileInteractionManager : MonoBehaviour
     public GameObject dugTilePrefab;
     public GameObject plantPrefab;
 
-    void Update()
+    private PlayerControls controls;
+
+    void Awake()
     {
-        if (Input.GetMouseButtonDown(0))
+        controls = new PlayerControls();
+    }
+
+    void OnEnable()
+    {
+        controls.Gameplay.Enable();
+        controls.Gameplay.Click.performed += ctx => HandleClick();
+    }
+
+    void OnDisable()
+    {
+        controls.Gameplay.Disable();
+    }
+
+    void HandleClick()
+    {
+        Vector3 worldClick = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        Vector3Int cell = tilemap.WorldToCell(worldClick);
+        Vector3 center = tilemap.GetCellCenterWorld(cell);
+
+        Collider2D hit = Physics2D.OverlapPoint(worldClick);
+
+        if (hit != null && hit.GetComponent<DiggableTileVisual>() != null)
         {
-            Vector3 worldClick = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Vector3Int cell = tilemap.WorldToCell(worldClick);
-            Vector3 center = tilemap.GetCellCenterWorld(cell);
-
-            Collider2D hit = Physics2D.OverlapPoint(worldClick);
-
-            if (hit != null && hit.GetComponent<DiggableTileVisual>() != null)
-            {
-                // ✔️ Already a dug tile → dig deeper
-                hit.GetComponent<DiggableTileVisual>().Dig();
-            }
-            else
-            {
-                // ✔️ First time digging → instantiate and dig once
-                GameObject dug = Instantiate(dugTilePrefab, center, Quaternion.identity);
-                DiggableTileVisual digScript = dug.GetComponent<DiggableTileVisual>();
-                if (digScript != null)
-                {
-                    digScript.Dig();
-                }
-            }
+            hit.GetComponent<DiggableTileVisual>().Dig();
+        }
+        else
+        {
+            GameObject dug = Instantiate(dugTilePrefab, center, Quaternion.identity);
+            dug.GetComponent<DiggableTileVisual>().Dig();
         }
     }
 }
