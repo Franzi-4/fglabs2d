@@ -1,6 +1,8 @@
+using UnityEngine;
+
 public class DiggableTileVisual : MonoBehaviour
 {
-    public Sprite[] holeStages; // Assigned in Inspector: 1 to 7 holes
+    public Sprite[] holeStages;
     private int digCount = 0;
     private SpriteRenderer sr;
 
@@ -16,10 +18,6 @@ public class DiggableTileVisual : MonoBehaviour
         {
             digCount++;
             UpdateVisual();
-        }
-        else
-        {
-            Debug.Log("Tile fully dug. Ready for planting (later).");
         }
     }
 
